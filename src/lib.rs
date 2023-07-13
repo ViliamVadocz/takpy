@@ -72,6 +72,11 @@ macro_rules! game {
                 fn reversible_plies(&self) -> u16 {
                     self.0.reversible_plies
                 }
+
+                // TODO: Figure out if this is the right way to do it
+                fn clone(&self) -> Game {
+                    Clone::clone(self)
+                }
             }
         }
     };
