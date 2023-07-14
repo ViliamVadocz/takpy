@@ -1,6 +1,6 @@
 [package]
 name = "takpy"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -10,4 +10,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.19.0"
-fast-tak = "0.2.1"
+fast-tak = "0.3.0"
