@@ -121,6 +121,79 @@ impl Move {
     fn __repr__(&self) -> String {
         self.0.to_string()
     }
+
+    #[staticmethod]
+    fn from_ptn(s: &str) -> PyResult<Self> {
+        Ok(Self(s.parse().map_err(Into::<ParseMoveError>::into)?))
+    }
+
+    fn square(&self) -> (u8, u8) {
+        let square = self.0.square();
+        (square.row(), square.column())
+    }
+
+    fn kind(&self) -> MoveKind {
+        self.0.kind().into()
+    }
+
+    fn piece(&self) -> Option<Piece> {
+        match self.0.kind() {
+            fast_tak::takparse::MoveKind::Place(piece) => Some(piece.into()),
+            _ => None,
+        }
+    }
+
+    fn direction(&self) -> Option<Direction> {
+        match self.0.kind() {
+            fast_tak::takparse::MoveKind::Spread(direction, ..) => Some(direction.into()),
+            _ => None,
+        }
+    }
+
+    fn drop_counts(&self) -> Option<Vec<u32>> {
+        match self.0.kind() {
+            fast_tak::takparse::MoveKind::Spread(.., pattern) => {
+                Some(pattern.into_iter().collect())
+            }
+            _ => None,
+        }
+    }
+}
+
+#[pyclass]
+enum MoveKind {
+    Place,
+    Spread,
+}
+
+impl From<fast_tak::takparse::MoveKind> for MoveKind {
+    fn from(value: fast_tak::takparse::MoveKind) -> Self {
+        use fast_tak::takparse::MoveKind;
+        match value {
+            MoveKind::Spread(..) => Self::Spread,
+            MoveKind::Place(..) => Self::Place,
+        }
+    }
+}
+
+#[pyclass]
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+impl From<fast_tak::takparse::Direction> for Direction {
+    fn from(value: fast_tak::takparse::Direction) -> Self {
+        use fast_tak::takparse::Direction;
+        match value {
+            Direction::Up => Self::Up,
+            Direction::Down => Self::Down,
+            Direction::Left => Self::Left,
+            Direction::Right => Self::Right,
+        }
+    }
 }
 
 #[pyclass]
@@ -133,13 +206,30 @@ enum GameResult {
 
 impl From<fast_tak::GameResult> for GameResult {
     fn from(value: fast_tak::GameResult) -> Self {
-        use fast_tak::takparse::Color::*;
-        use fast_tak::GameResult::*;
+        use fast_tak::takparse::Color;
+        use fast_tak::GameResult;
         match value {
-            Ongoing => Self::Ongoing,
-            Winner { color: White, .. } => Self::WhiteWin,
-            Winner { color: Black, .. } => Self::BlackWin,
-            Draw { .. } => Self::Draw,
+            GameResult::Ongoing => Self::Ongoing,
+            GameResult::Winner {
+                color: Color::White,
+                ..
+            } => Self::WhiteWin,
+            GameResult::Winner {
+                color: Color::Black,
+                ..
+            } => Self::BlackWin,
+            GameResult::Draw { .. } => Self::Draw,
+        }
+    }
+}
+
+#[pymethods]
+impl GameResult {
+    fn color(&self) -> Option<Color> {
+        match self {
+            Self::WhiteWin => Some(Color::White),
+            Self::BlackWin => Some(Color::Black),
+            _ => None,
         }
     }
 }
@@ -152,10 +242,10 @@ enum Color {
 
 impl From<fast_tak::takparse::Color> for Color {
     fn from(value: fast_tak::takparse::Color) -> Self {
-        use fast_tak::takparse::Color::*;
+        use fast_tak::takparse::Color;
         match value {
-            White => Self::White,
-            Black => Self::Black,
+            Color::White => Self::White,
+            Color::Black => Self::Black,
         }
     }
 }
@@ -169,11 +259,11 @@ enum Piece {
 
 impl From<fast_tak::takparse::Piece> for Piece {
     fn from(value: fast_tak::takparse::Piece) -> Self {
-        use fast_tak::takparse::Piece::*;
+        use fast_tak::takparse::Piece;
         match value {
-            Flat => Self::Flat,
-            Wall => Self::Wall,
-            Cap => Self::Cap,
+            Piece::Flat => Self::Flat,
+            Piece::Wall => Self::Wall,
+            Piece::Cap => Self::Cap,
         }
     }
 }
@@ -193,11 +283,28 @@ impl From<fast_tak::PlayError> for PlayError {
     }
 }
 
+#[pyclass]
+struct ParseMoveError(fast_tak::takparse::ParseMoveError);
+
+impl From<ParseMoveError> for PyErr {
+    fn from(error: ParseMoveError) -> Self {
+        PyValueError::new_err(error.0.to_string())
+    }
+}
+
+impl From<fast_tak::takparse::ParseMoveError> for ParseMoveError {
+    fn from(error: fast_tak::takparse::ParseMoveError) -> Self {
+        Self(error)
+    }
+}
+
 #[pymodule]
 fn takpy(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(new_game, m)?)?;
     m.add_class::<Move>()?;
     m.add_class::<GameResult>()?;
     m.add_class::<PlayError>()?;
+    m.add_class::<Color>()?;
+    m.add_class::<Piece>()?;
     Ok(())
 }
