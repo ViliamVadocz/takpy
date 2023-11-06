@@ -301,10 +301,13 @@ impl From<fast_tak::takparse::ParseMoveError> for ParseMoveError {
 #[pymodule]
 fn takpy(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(new_game, m)?)?;
+    m.add_class::<size_3::Game>()?; // export one of Game objects to help with type hints
     m.add_class::<Move>()?;
     m.add_class::<GameResult>()?;
     m.add_class::<PlayError>()?;
     m.add_class::<Color>()?;
     m.add_class::<Piece>()?;
+    m.add_class::<Direction>()?;
+    m.add_class::<MoveKind>()?;
     Ok(())
 }
