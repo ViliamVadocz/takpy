@@ -7,10 +7,24 @@ macro_rules! game {
 
             #[pyclass]
             #[derive(Clone, Default)]
-            pub struct Game(fast_tak::Game<$size, $half_komi>);
+            pub struct Game(pub fast_tak::Game<$size, $half_komi>);
 
             #[pymethods]
             impl Game {
+                fn __repr__(&self) -> String {
+                    fast_tak::takparse::Tps::from(self.0.clone()).to_string()
+                }
+
+                #[getter]
+                fn half_komi(&self) -> i8 {
+                    $half_komi
+                }
+
+                #[getter]
+                fn size(&self) -> usize {
+                    $size
+                }
+
                 /// Get the moves possible in the current position.
                 fn possible_moves(&self) -> Vec<Move> {
                     let mut moves = Vec::with_capacity(128);
@@ -109,6 +123,40 @@ fn new_game(py: Python, size: usize, half_komi: i8) -> PyResult<PyObject> {
         (7, 4) => Ok(size_7_half_komi_4::Game::default().into_py(py)),
         (8, 4) => Ok(size_8_half_komi_4::Game::default().into_py(py)),
         _ => Err(PyValueError::new_err("Unsupported size or komi")),
+    }
+}
+
+#[pyfunction]
+#[pyo3(signature = (size, tps, half_komi=0))]
+fn game_from_tps(py: Python, size: usize, tps: &str, half_komi: i8) -> PyResult<PyObject> {
+    let tps: fast_tak::takparse::Tps = tps.parse().map_err(Into::<ParseTpsError>::into)?;
+    match (size, half_komi) {
+        (3, 0) => Ok(size_3::Game(tps.into()).into_py(py)),
+        (4, 0) => Ok(size_4::Game(tps.into()).into_py(py)),
+        (5, 0) => Ok(size_5::Game(tps.into()).into_py(py)),
+        (6, 0) => Ok(size_6::Game(tps.into()).into_py(py)),
+        (7, 0) => Ok(size_7::Game(tps.into()).into_py(py)),
+        (8, 0) => Ok(size_8::Game(tps.into()).into_py(py)),
+        (5, 4) => Ok(size_5_half_komi_4::Game(tps.into()).into_py(py)),
+        (6, 4) => Ok(size_6_half_komi_4::Game(tps.into()).into_py(py)),
+        (7, 4) => Ok(size_7_half_komi_4::Game(tps.into()).into_py(py)),
+        (8, 4) => Ok(size_8_half_komi_4::Game(tps.into()).into_py(py)),
+        _ => Err(PyValueError::new_err("Unsupported size or komi")),
+    }
+}
+
+#[pyclass]
+struct ParseTpsError(fast_tak::takparse::ParseTpsError);
+
+impl From<ParseTpsError> for PyErr {
+    fn from(error: ParseTpsError) -> Self {
+        PyValueError::new_err(error.0.to_string())
+    }
+}
+
+impl From<fast_tak::takparse::ParseTpsError> for ParseTpsError {
+    fn from(error: fast_tak::takparse::ParseTpsError) -> Self {
+        Self(error)
     }
 }
 
@@ -301,6 +349,7 @@ impl From<fast_tak::takparse::ParseMoveError> for ParseMoveError {
 #[pymodule]
 fn takpy(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(new_game, m)?)?;
+    m.add_function(wrap_pyfunction!(game_from_tps, m)?)?;
     m.add_class::<size_3::Game>()?; // export one of Game objects to help with type hints
     m.add_class::<Move>()?;
     m.add_class::<GameResult>()?;
