@@ -26,6 +26,7 @@ macro_rules! game {
                 }
 
                 /// Get the moves possible in the current position.
+                #[getter]
                 fn possible_moves(&self) -> Vec<Move> {
                     let mut moves = Vec::with_capacity(128);
                     self.0.possible_moves(&mut moves);
@@ -38,6 +39,7 @@ macro_rules! game {
                 }
 
                 /// Check whether the game has ended and who as won.
+                #[getter]
                 fn result(&self) -> GameResult {
                     self.0.result().into()
                 }
@@ -175,15 +177,18 @@ impl Move {
         Ok(Self(s.parse().map_err(Into::<ParseMoveError>::into)?))
     }
 
+    #[getter]
     fn square(&self) -> (u8, u8) {
         let square = self.0.square();
         (square.row(), square.column())
     }
 
+    #[getter]
     fn kind(&self) -> MoveKind {
         self.0.kind().into()
     }
 
+    #[getter]
     fn piece(&self) -> Option<Piece> {
         match self.0.kind() {
             fast_tak::takparse::MoveKind::Place(piece) => Some(piece.into()),
@@ -191,6 +196,7 @@ impl Move {
         }
     }
 
+    #[getter]
     fn direction(&self) -> Option<Direction> {
         match self.0.kind() {
             fast_tak::takparse::MoveKind::Spread(direction, ..) => Some(direction.into()),
@@ -198,6 +204,7 @@ impl Move {
         }
     }
 
+    #[getter]
     fn drop_counts(&self) -> Option<Vec<u32>> {
         match self.0.kind() {
             fast_tak::takparse::MoveKind::Spread(.., pattern) => {
@@ -353,10 +360,12 @@ fn takpy(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<size_3::Game>()?; // export one of Game objects to help with type hints
     m.add_class::<Move>()?;
     m.add_class::<GameResult>()?;
-    m.add_class::<PlayError>()?;
     m.add_class::<Color>()?;
     m.add_class::<Piece>()?;
     m.add_class::<Direction>()?;
     m.add_class::<MoveKind>()?;
+    m.add_class::<PlayError>()?;
+    m.add_class::<ParseMoveError>()?;
+    m.add_class::<ParseTpsError>()?;
     Ok(())
 }
