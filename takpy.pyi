@@ -50,6 +50,8 @@ class Color(Enum):
     White = 0
     Black = 1
 
+    def next(self) -> Color: ...
+
 class Piece(Enum):
     Flat = 0
     Wall = 1

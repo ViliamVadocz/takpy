@@ -295,6 +295,16 @@ enum Color {
     Black,
 }
 
+#[pymethods]
+impl Color {
+    fn next(&self) -> Color {
+        match self {
+            Color::White => Color::Black,
+            Color::Black => Color::White,
+        }
+    }
+}
+
 impl From<fast_tak::takparse::Color> for Color {
     fn from(value: fast_tak::takparse::Color) -> Self {
         use fast_tak::takparse::Color;
