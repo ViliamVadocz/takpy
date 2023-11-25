@@ -93,6 +93,13 @@ macro_rules! game {
                 fn clone(&self) -> Game {
                     Clone::clone(self)
                 }
+
+                /// Clone the game and play a move in it, returning the newly created game.
+                fn clone_and_play(&self, my_move: Move) -> Result<Game, PlayError> {
+                    let mut clone = Clone::clone(self);
+                    clone.0.play(my_move.0)?;
+                    Ok(clone)
+                }
             }
         }
     };
