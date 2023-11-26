@@ -1,12 +1,15 @@
 from enum import Enum
 
+Stack = tuple[Piece, list[Color]]
+Board = list[list[None | Stack]]
+
 def new_game(size: int, half_komi: int = 0) -> Game: ...
 def game_from_tps(size: int, tps: str, half_komi: int = 0) -> Game: ...
 
 class Game:
     half_komi: int
     size: int
-    board: list[list[None | list[Color]]]
+    board: Board
     to_move: Color
     white_reserves: tuple[int, int]
     black_reserves: tuple[int, int]
