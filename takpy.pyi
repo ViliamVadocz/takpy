@@ -50,6 +50,8 @@ class GameResult(Enum):
     BlackWin = 2
     Draw = 3
 
+    def color(self) -> Color | None: ...
+
 class Color(Enum):
     White = 0
     Black = 1
