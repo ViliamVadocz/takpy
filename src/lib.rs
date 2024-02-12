@@ -123,6 +123,8 @@ game!(size_5, 5, 0);
 game!(size_6, 6, 0);
 game!(size_7, 7, 0);
 game!(size_8, 8, 0);
+game!(size_3_half_komi_4, 3, 4);
+game!(size_4_half_komi_4, 4, 4);
 game!(size_5_half_komi_4, 5, 4);
 game!(size_6_half_komi_4, 6, 4);
 game!(size_7_half_komi_4, 7, 4);
@@ -139,6 +141,8 @@ fn new_game(py: Python, size: usize, half_komi: i8) -> PyResult<PyObject> {
         (6, 0) => Ok(size_6::Game::default().into_py(py)),
         (7, 0) => Ok(size_7::Game::default().into_py(py)),
         (8, 0) => Ok(size_8::Game::default().into_py(py)),
+        (3, 4) => Ok(size_3_half_komi_4::Game::default().into_py(py)),
+        (4, 4) => Ok(size_4_half_komi_4::Game::default().into_py(py)),
         (5, 4) => Ok(size_5_half_komi_4::Game::default().into_py(py)),
         (6, 4) => Ok(size_6_half_komi_4::Game::default().into_py(py)),
         (7, 4) => Ok(size_7_half_komi_4::Game::default().into_py(py)),
@@ -158,6 +162,8 @@ fn game_from_tps(py: Python, size: usize, tps: &str, half_komi: i8) -> PyResult<
         (6, 0) => Ok(size_6::Game(tps.into()).into_py(py)),
         (7, 0) => Ok(size_7::Game(tps.into()).into_py(py)),
         (8, 0) => Ok(size_8::Game(tps.into()).into_py(py)),
+        (3, 4) => Ok(size_3_half_komi_4::Game(tps.into()).into_py(py)),
+        (4, 4) => Ok(size_4_half_komi_4::Game(tps.into()).into_py(py)),
         (5, 4) => Ok(size_5_half_komi_4::Game(tps.into()).into_py(py)),
         (6, 4) => Ok(size_6_half_komi_4::Game(tps.into()).into_py(py)),
         (7, 4) => Ok(size_7_half_komi_4::Game(tps.into()).into_py(py)),
