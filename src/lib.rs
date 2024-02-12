@@ -1,3 +1,5 @@
+use std::hash::{Hash, Hasher};
+
 use pyo3::{exceptions::PyValueError, prelude::*};
 
 macro_rules! game {
@@ -13,6 +15,16 @@ macro_rules! game {
             impl Game {
                 fn __repr__(&self) -> String {
                     fast_tak::takparse::Tps::from(self.0.clone()).to_string()
+                }
+
+                fn __eq__(&self, other: Game) -> bool {
+                    self.0 == other.0
+                }
+
+                fn __hash__(&self) -> u64 {
+                    let mut s = std::hash::DefaultHasher::new();
+                    self.0.hash(&mut s);
+                    s.finish()
                 }
 
                 #[getter]
@@ -177,6 +189,16 @@ struct Move(fast_tak::takparse::Move);
 impl Move {
     fn __repr__(&self) -> String {
         self.0.to_string()
+    }
+
+    fn __eq__(&self, other: Move) -> bool {
+        self.0 == other.0
+    }
+
+    fn __hash__(&self) -> u64 {
+        let mut s = std::hash::DefaultHasher::new();
+        self.0.hash(&mut s);
+        s.finish()
     }
 
     #[staticmethod]
