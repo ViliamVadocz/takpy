@@ -39,7 +39,6 @@ macro_rules! game {
                 }
 
                 /// Get the moves possible in the current position.
-                #[getter]
                 fn possible_moves(&self) -> Vec<Move> {
                     let mut moves = Vec::with_capacity(128);
                     self.0.possible_moves(&mut moves);
@@ -52,14 +51,13 @@ macro_rules! game {
                 }
 
                 /// Check whether the game has ended and who as won.
-                #[getter]
                 fn result(&self) -> GameResult {
                     self.0.result().into()
                 }
 
-                // TODO: Can we avoid all these ugly allocations?
-                #[getter]
+                /// Get the board.
                 fn board(&self) -> Vec<Vec<Option<(Piece, Vec<Color>)>>> {
+                    // TODO: Can we avoid all these ugly allocations?
                     self.0
                         .board
                         .iter()
@@ -102,7 +100,6 @@ macro_rules! game {
                     self.0.reversible_plies
                 }
 
-                // TODO: Figure out if this is the right way to do it
                 fn clone(&self) -> Game {
                     Clone::clone(self)
                 }
@@ -250,7 +247,6 @@ impl Move {
         }
     }
 
-    #[getter]
     fn drop_counts(&self) -> Option<Vec<u32>> {
         match self.0.kind() {
             fast_tak::takparse::MoveKind::Spread(.., pattern) => {
