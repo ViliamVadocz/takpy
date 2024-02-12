@@ -1,5 +1,6 @@
 use std::hash::{Hash, Hasher};
 
+use fast_tak::Symmetry;
 use pyo3::{exceptions::PyValueError, prelude::*};
 
 macro_rules! game {
@@ -111,6 +112,16 @@ macro_rules! game {
                     let mut clone = Clone::clone(self);
                     clone.0.play(my_move.0)?;
                     Ok(clone)
+                }
+
+                /// Return all the symmetries of this position.
+                fn symmetries(&self) -> [Self; 8] {
+                    self.0.symmetries().map(Self)
+                }
+
+                /// Return the position in the canonical orientation.
+                fn canonical(&self) -> Self {
+                    Self(self.0.clone().canonical())
                 }
             }
         }
@@ -247,6 +258,19 @@ impl Move {
             }
             _ => None,
         }
+    }
+
+    fn symmetries(&self, size: usize) -> PyResult<[Self; 8]> {
+        Ok(match size {
+            3 => Symmetry::<3>::symmetries(&self.0),
+            4 => Symmetry::<4>::symmetries(&self.0),
+            5 => Symmetry::<5>::symmetries(&self.0),
+            6 => Symmetry::<6>::symmetries(&self.0),
+            7 => Symmetry::<7>::symmetries(&self.0),
+            8 => Symmetry::<8>::symmetries(&self.0),
+            _ => return Err(PyValueError::new_err("Unsupported size")),
+        }
+        .map(Self))
     }
 }
 
