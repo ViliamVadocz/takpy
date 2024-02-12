@@ -19,3 +19,5 @@ while game.result() == GameResult.Ongoing:
 - `game.result()` calculates the result of the game.
 
 There are getters for `game.board`, `game.to_move`, `game.white_reserves`, `game.black_reserves`, `game.ply`, and `game.reversible_plies`.
+
+You can find out more about how to use the library as part of my [Takbot Tutorial](https://viliamvadocz.github.io/takbot_tutorial/takpy.html).
