@@ -215,8 +215,8 @@ impl Move {
         s.finish()
     }
 
-    #[staticmethod]
-    fn from_ptn(s: &str) -> PyResult<Self> {
+    #[new]
+    fn new(s: &str) -> PyResult<Self> {
         Ok(Self(s.parse().map_err(Into::<ParseMoveError>::into)?))
     }
 
@@ -333,6 +333,17 @@ impl From<fast_tak::GameResult> for GameResult {
     }
 }
 
+impl From<fast_tak::takparse::GameResult> for GameResult {
+    fn from(value: fast_tak::takparse::GameResult) -> Self {
+        use fast_tak::takparse::GameResult;
+        match value {
+            GameResult::White(..) => Self::WhiteWin,
+            GameResult::Black(..) => Self::BlackWin,
+            GameResult::Draw => Self::Draw,
+        }
+    }
+}
+
 #[pymethods]
 impl GameResult {
     fn color(&self) -> Option<Color> {
@@ -418,6 +429,56 @@ impl From<fast_tak::takparse::ParseMoveError> for ParseMoveError {
     }
 }
 
+#[pyclass]
+struct Ptn(fast_tak::takparse::Ptn);
+
+#[pymethods]
+impl Ptn {
+    #[new]
+    fn new(s: &str) -> PyResult<Self> {
+        Ok(Self(s.parse().map_err(Into::<ParsePtnError>::into)?))
+    }
+
+    fn tags(&self) -> Vec<(String, String)> {
+        self.0
+            .tags()
+            .iter()
+            .map(|tag| (tag.key().to_owned(), tag.value().to_owned()))
+            .collect()
+    }
+
+    fn moves(&self) -> Vec<Move> {
+        self.0.moves().iter().map(|m| Move(*m)).collect()
+    }
+
+    fn comments(&self) -> Vec<Vec<String>> {
+        self.0.comments().to_vec()
+    }
+
+    #[getter]
+    fn result(&self) -> GameResult {
+        self.0
+            .result()
+            .map(GameResult::from)
+            .unwrap_or(GameResult::Ongoing)
+    }
+}
+
+#[pyclass]
+struct ParsePtnError(fast_tak::takparse::ParsePtnError);
+
+impl From<ParsePtnError> for PyErr {
+    fn from(error: ParsePtnError) -> Self {
+        PyValueError::new_err(error.0.to_string())
+    }
+}
+
+impl From<fast_tak::takparse::ParsePtnError> for ParsePtnError {
+    fn from(error: fast_tak::takparse::ParsePtnError) -> Self {
+        Self(error)
+    }
+}
+
 #[pymodule]
 fn takpy(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(new_game, m)?)?;
@@ -429,8 +490,10 @@ fn takpy(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<Piece>()?;
     m.add_class::<Direction>()?;
     m.add_class::<MoveKind>()?;
+    m.add_class::<Ptn>()?;
     m.add_class::<PlayError>()?;
     m.add_class::<ParseMoveError>()?;
     m.add_class::<ParseTpsError>()?;
+    m.add_class::<ParsePtnError>()?;
     Ok(())
 }
