@@ -141,41 +141,43 @@ game!(size_8_half_komi_4, 8, 4);
 /// Create a new game with the given size and half-komi.
 #[pyfunction]
 #[pyo3(signature = (size, half_komi=0))]
-fn new_game(py: Python, size: usize, half_komi: i8) -> PyResult<PyObject> {
+fn new_game(py: Python, size: usize, half_komi: i8) -> PyResult<Py<PyAny>> {
+    use pyo3::IntoPyObjectExt;
     match (size, half_komi) {
-        (3, 0) => Ok(size_3::Game::default().into_py(py)),
-        (4, 0) => Ok(size_4::Game::default().into_py(py)),
-        (5, 0) => Ok(size_5::Game::default().into_py(py)),
-        (6, 0) => Ok(size_6::Game::default().into_py(py)),
-        (7, 0) => Ok(size_7::Game::default().into_py(py)),
-        (8, 0) => Ok(size_8::Game::default().into_py(py)),
-        (3, 4) => Ok(size_3_half_komi_4::Game::default().into_py(py)),
-        (4, 4) => Ok(size_4_half_komi_4::Game::default().into_py(py)),
-        (5, 4) => Ok(size_5_half_komi_4::Game::default().into_py(py)),
-        (6, 4) => Ok(size_6_half_komi_4::Game::default().into_py(py)),
-        (7, 4) => Ok(size_7_half_komi_4::Game::default().into_py(py)),
-        (8, 4) => Ok(size_8_half_komi_4::Game::default().into_py(py)),
+        (3, 0) => size_3::Game::default().into_py_any(py),
+        (4, 0) => size_4::Game::default().into_py_any(py),
+        (5, 0) => size_5::Game::default().into_py_any(py),
+        (6, 0) => size_6::Game::default().into_py_any(py),
+        (7, 0) => size_7::Game::default().into_py_any(py),
+        (8, 0) => size_8::Game::default().into_py_any(py),
+        (3, 4) => size_3_half_komi_4::Game::default().into_py_any(py),
+        (4, 4) => size_4_half_komi_4::Game::default().into_py_any(py),
+        (5, 4) => size_5_half_komi_4::Game::default().into_py_any(py),
+        (6, 4) => size_6_half_komi_4::Game::default().into_py_any(py),
+        (7, 4) => size_7_half_komi_4::Game::default().into_py_any(py),
+        (8, 4) => size_8_half_komi_4::Game::default().into_py_any(py),
         _ => Err(PyValueError::new_err("Unsupported size or komi")),
     }
 }
 
 #[pyfunction]
 #[pyo3(signature = (size, tps, half_komi=0))]
-fn game_from_tps(py: Python, size: usize, tps: &str, half_komi: i8) -> PyResult<PyObject> {
+fn game_from_tps(py: Python, size: usize, tps: &str, half_komi: i8) -> PyResult<Py<PyAny>> {
+    use pyo3::IntoPyObjectExt;
     let tps: fast_tak::takparse::Tps = tps.parse().map_err(Into::<ParseTpsError>::into)?;
     match (size, half_komi) {
-        (3, 0) => Ok(size_3::Game(tps.into()).into_py(py)),
-        (4, 0) => Ok(size_4::Game(tps.into()).into_py(py)),
-        (5, 0) => Ok(size_5::Game(tps.into()).into_py(py)),
-        (6, 0) => Ok(size_6::Game(tps.into()).into_py(py)),
-        (7, 0) => Ok(size_7::Game(tps.into()).into_py(py)),
-        (8, 0) => Ok(size_8::Game(tps.into()).into_py(py)),
-        (3, 4) => Ok(size_3_half_komi_4::Game(tps.into()).into_py(py)),
-        (4, 4) => Ok(size_4_half_komi_4::Game(tps.into()).into_py(py)),
-        (5, 4) => Ok(size_5_half_komi_4::Game(tps.into()).into_py(py)),
-        (6, 4) => Ok(size_6_half_komi_4::Game(tps.into()).into_py(py)),
-        (7, 4) => Ok(size_7_half_komi_4::Game(tps.into()).into_py(py)),
-        (8, 4) => Ok(size_8_half_komi_4::Game(tps.into()).into_py(py)),
+        (3, 0) => size_3::Game(tps.into()).into_py_any(py),
+        (4, 0) => size_4::Game(tps.into()).into_py_any(py),
+        (5, 0) => size_5::Game(tps.into()).into_py_any(py),
+        (6, 0) => size_6::Game(tps.into()).into_py_any(py),
+        (7, 0) => size_7::Game(tps.into()).into_py_any(py),
+        (8, 0) => size_8::Game(tps.into()).into_py_any(py),
+        (3, 4) => size_3_half_komi_4::Game(tps.into()).into_py_any(py),
+        (4, 4) => size_4_half_komi_4::Game(tps.into()).into_py_any(py),
+        (5, 4) => size_5_half_komi_4::Game(tps.into()).into_py_any(py),
+        (6, 4) => size_6_half_komi_4::Game(tps.into()).into_py_any(py),
+        (7, 4) => size_7_half_komi_4::Game(tps.into()).into_py_any(py),
+        (8, 4) => size_8_half_komi_4::Game(tps.into()).into_py_any(py),
         _ => Err(PyValueError::new_err("Unsupported size or komi")),
     }
 }
@@ -270,7 +272,8 @@ impl Move {
     }
 }
 
-#[pyclass]
+#[pyclass(eq, eq_int)]
+#[derive(PartialEq, Eq)]
 enum MoveKind {
     Place,
     Spread,
@@ -286,7 +289,8 @@ impl From<fast_tak::takparse::MoveKind> for MoveKind {
     }
 }
 
-#[pyclass]
+#[pyclass(eq, eq_int)]
+#[derive(PartialEq, Eq)]
 enum Direction {
     Up,
     Down,
@@ -306,7 +310,8 @@ impl From<fast_tak::takparse::Direction> for Direction {
     }
 }
 
-#[pyclass]
+#[pyclass(eq, eq_int)]
+#[derive(PartialEq, Eq)]
 enum GameResult {
     Ongoing,
     WhiteWin,
@@ -355,7 +360,8 @@ impl GameResult {
     }
 }
 
-#[pyclass]
+#[pyclass(eq, eq_int)]
+#[derive(PartialEq, Eq)]
 enum Color {
     White,
     Black,
@@ -381,7 +387,8 @@ impl From<fast_tak::takparse::Color> for Color {
     }
 }
 
-#[pyclass]
+#[pyclass(eq, eq_int)]
+#[derive(PartialEq, Eq)]
 enum Piece {
     Flat,
     Wall,
@@ -480,7 +487,7 @@ impl From<fast_tak::takparse::ParsePtnError> for ParsePtnError {
 }
 
 #[pymodule]
-fn takpy(_py: Python, m: &PyModule) -> PyResult<()> {
+fn takpy(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(new_game, m)?)?;
     m.add_function(wrap_pyfunction!(game_from_tps, m)?)?;
     m.add_class::<size_3::Game>()?; // export one of Game objects to help with type hints
