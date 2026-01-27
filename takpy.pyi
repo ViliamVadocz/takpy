@@ -1,6 +1,6 @@
 from enum import Enum
 
-Stack = tuple[Piece, list[Color]]
+Stack = tuple[Piece, list[Color]]  # colors are stored bottom to top
 Board = list[list[None | Stack]]
 
 def new_game(size: int, half_komi: int = 0) -> Game: ...
@@ -10,8 +10,8 @@ class Game:
     half_komi: int
     size: int
     to_move: Color
-    white_reserves: tuple[int, int]
-    black_reserves: tuple[int, int]
+    white_reserves: tuple[int, int]  # stones, capstones
+    black_reserves: tuple[int, int]  # stones, capstones
     ply: int
     reversible_plies: int
 
@@ -32,6 +32,7 @@ class Move:
     kind: MoveKind
     piece: None | Piece
     direction: None | Direction
+    pattern: int  # pattern of the spread, 0 for placements
 
     def __new__(s: str) -> Move: ...
     def __repr__(self) -> str: ...

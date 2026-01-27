@@ -249,6 +249,14 @@ impl Move {
         }
     }
 
+    #[getter]
+    fn pattern(&self) -> u8 {
+        match self.0.kind() {
+            fast_tak::takparse::MoveKind::Place(_) => 0,
+            fast_tak::takparse::MoveKind::Spread(_, pattern) => pattern.mask(),
+        }
+    }
+
     fn drop_counts(&self) -> Option<Vec<u32>> {
         match self.0.kind() {
             fast_tak::takparse::MoveKind::Spread(.., pattern) => {
