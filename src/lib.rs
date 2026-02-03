@@ -8,7 +8,7 @@ macro_rules! game {
         mod $name {
             use super::*;
 
-            #[pyclass]
+            #[pyclass(from_py_object)]
             #[derive(Clone, Default)]
             pub struct Game(pub fast_tak::Game<$size, $half_komi>);
 
@@ -197,7 +197,7 @@ impl From<fast_tak::takparse::ParseTpsError> for ParseTpsError {
     }
 }
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 struct Move(fast_tak::takparse::Move);
 
